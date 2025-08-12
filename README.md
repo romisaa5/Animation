@@ -20,7 +20,16 @@ These widgets handle the animation automatically without manually controlling fr
     - A **functionality** that the widget provides (even if there’s no widget with that name).  
       Example: `AnimatedScale` → there is no widget called `Scale`, but this represents the scaling functionality.  
    - **Important:** All AnimatedFoo widgets **must have a `duration` parameter** to define how long the animation will take.
-   - **Optional:** You can also provide a [`curve`](https://api.flutter.dev/flutter/animation/Curves-class.html) to control the speed pattern of the animation.
+   - **Optional:** You can also provide a [`curve`](https://api.flutter.dev/flutter/animation/Curves-class.html) to control the speed pattern of the animation.7
+    
+## ⏳ Duration & 🎯 Curves
+- **`duration`** → Defines the total time the animation will take to complete. It is **required** for all implicit animations.  
+- **`curve`** → Defines the pacing of the animation (how it speeds up or slows down).  
+  Examples from [`Curves`](https://api.flutter.dev/flutter/animation/Curves-class.html):
+  - `Curves.linear` → constant speed.  
+  - `Curves.easeIn` → starts slow, then speeds up.  
+  - `Curves.easeOut` → starts fast, then slows down.  
+  - `Curves.bounceOut` → ends with a bounce effect.  
      **Example:**
 ```dart
 import 'package:flutter/material.dart';
@@ -81,8 +90,7 @@ class _AnimatedContainerExampleState extends State<AnimatedContainerExample> {
   - For doubles: use `Tween<double>`  
   - For colors: use `ColorTween`  
 - The tween defines the initial value (**begin**) and the final value (**end**) for the animation.
-
-**Example:**
+  **Example:**
 ```dart
 TweenAnimationBuilder<int>(
   tween: IntTween(begin: 0, end: 100),
@@ -95,26 +103,77 @@ TweenAnimationBuilder<int>(
   },
 );
  ```
+### About the `builder` function:
+- The `builder` function in `TweenAnimationBuilder` receives **three parameters**:
+  1. **`context`** → The `BuildContext` of the widget.
+  2. **`value`** → The current animation value (its type matches the type of the tween).
+  3. **`child`** → An optional widget that remains constant during the animation (used for optimization).
+
+**Example:**
+```dart
+TweenAnimationBuilder<double>(
+  tween: Tween<double>(begin: 0, end: 1),
+  duration: const Duration(seconds: 2),
+  builder: (context, value, child) {
+    return Opacity(
+      opacity: value,
+      child: child,
+    );
+  },
+  child: const Text(
+    'Hello Animation!',
+    style: TextStyle(fontSize: 24),
+  ),
+);
+```
+### About the `child` attribute in `TweenAnimationBuilder`:
+- The `child` attribute is used for **static parts of the widget tree** that do not need to be rebuilt on every animation frame.
+- This improves performance because Flutter won't rebuild that part repeatedly.
+- You pass the static widget to the `child` parameter, and then **use it inside the `builder`** function.
+- Commonly used for widgets like `Text`, `Icon`, or any element that does not change during the animation.
+
+**Example:**
+```dart
+TweenAnimationBuilder<double>(
+  tween: Tween<double>(begin: 0, end: 1),
+  duration: const Duration(seconds: 2),
+  child: const Text(
+    'Static Text',
+    style: TextStyle(fontSize: 24),
+  ),
+  builder: (context, value, child) {
+    return Opacity(
+      opacity: value,
+      child: child, // Reuses the static child without rebuilding
+    );
+  },
+);
+```
+
 
 ---
 
 ## 2️⃣ With Controller (Explicit Animations)
+
 These require manual control using an `AnimationController`.
+## 🔧 When to Use AnimationController
+
+Use an **AnimationController** when you need:  
+
+- To **track the animation's value** continuously (e.g., read `controller.value` in real time).  
+- To have **full control** over the animation lifecycle, including:  
+  - Starting and stopping the animation (`forward()`, `stop()`)  
+  - Reversing the animation (`reverse()`)  
+  - Repeating the animation indefinitely (`repeat()`)  
+- To build **complex or interactive animations** that need manual control.  
+
+---
+
 
 **Subtypes:**
 - **FadeTransition Widget** → Controls opacity using an animation.
 - **AnimatedBuilder** → Dynamically rebuilds widgets based on the animation value.
 
----
-
-## ⏳ Duration & 🎯 Curves
-- **`duration`** → Defines the total time the animation will take to complete. It is **required** for all implicit animations.  
-- **`curve`** → Defines the pacing of the animation (how it speeds up or slows down).  
-  Examples from [`Curves`](https://api.flutter.dev/flutter/animation/Curves-class.html):
-  - `Curves.linear` → constant speed.  
-  - `Curves.easeIn` → starts slow, then speeds up.  
-  - `Curves.easeOut` → starts fast, then slows down.  
-  - `Curves.bounceOut` → ends with a bounce effect.  
 
 ---
 
