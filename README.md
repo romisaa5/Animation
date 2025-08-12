@@ -1,5 +1,10 @@
 # Animation in Flutter
 
+## 📌 Description
+This repository is a summarized reference for everything I learn during the **Flutter Animation** course.  
+It contains organized notes, explanations, and practical code examples covering both **implicit** and **explicit** animations. 
+The aim is to create a clear and concise resource that I can revisit anytime, and also serve as a helpful reference for others who want to learn Flutter animations.
+
 # 🎯 Types of Animation Widgets in Flutter
 
 In Flutter, animation widgets are divided into **two main types**:
