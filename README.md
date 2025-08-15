@@ -170,13 +170,90 @@ Use an **AnimationController** when you need:
 ---
 
 
-**Subtypes:**
+# Subtypes:
 - **FadeTransition Widget** → Controls opacity using an animation.
 - **AnimatedBuilder** → Dynamically rebuilds widgets based on the animation value.
 
+## 🎯 First Type: Foo Transition (e.g., ScaleTransition)
+- A **Foo Transition** widget performs an operation on its `child` widget.
+- It **requires**:
+  1. `child` → The widget to be animated.
+  2. A property related to its name (e.g., `scale` in `ScaleTransition`).
+
+Example:
+- `ScaleTransition` needs:
+  - `child` → widget to scale.
+  - `scale` → an **Animation** object.
 
 ---
 
+## ⚠️ Important:
+- The `Animation` parameter (like `scale`) must be of type **`Animation<T>`**.
+- You **cannot** create an `Animation` directly because `Animation` is an **abstract class**.
+- Instead:
+  1. Create a **Tween** with the desired range.
+  2. Call `.animate()` on it, passing the `AnimationController`.
+---
+
+## The `.animate()` Function
+When calling `.animate()` from the tween, it requires a **parent**  this parent is your `AnimationController`.
+
+---
+
+## Example Code
+```dart
+import 'package:flutter/material.dart';
+
+class ScaleAnimationExample extends StatefulWidget {
+  const ScaleAnimationExample({super.key});
+
+  @override
+  State<ScaleAnimationExample> createState() => _ScaleAnimationExampleState();
+}
+
+class _ScaleAnimationExampleState extends State<ScaleAnimationExample>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Step 1: Create AnimationController
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+
+    // Step 2: Create Tween and call .animate() with the controller as parent
+    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.5).animate(_controller);
+
+    // Step 3: Start the animation
+    _controller.repeat(reverse: true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ScaleTransition(
+        scale: _scaleAnimation, // Animation value
+        child: Container(
+          width: 100,
+          height: 100,
+          color: Colors.blue,
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose(); // Always dispose controller
+    super.dispose();
+  }
+}
+```
 ⚡ **Tip:**  
 - Use **Implicit Animations** for simple and quick effects.  
 - Use **Explicit Animations** for more complex and customizable animations.
