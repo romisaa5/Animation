@@ -171,7 +171,7 @@ Use an **AnimationController** when you need:
 
 
 # Subtypes:
-- **FadeTransition Widget** → Controls opacity using an animation.
+- **Foo Transition Widget** → Controls opacity using an animation.
 - **AnimatedBuilder** → Dynamically rebuilds widgets based on the animation value.
 
 ## 🎯 First Type: Foo Transition (e.g., ScaleTransition)
@@ -199,7 +199,64 @@ Example:
 When calling `.animate()` from the tween, it requires a **parent**  this parent is your `AnimationController`.
 
 ---
+The `AnimationController` requires a property called `vsync` and optionally a `duration`.  
+- **vsync** stands for *vertical synchronization*, and it is usually provided by a `TickerProvider`.  
+- The `Ticker` class is a special class that calls a function every time a new frame is rendered.  
+- `vsync` helps Flutter avoid rendering animations when the screen is not visible, which saves resources.  
+- **duration** defines how long the animation will take. It’s not marked as `required`, but if you use `AnimationController` without providing a duration, you will get an exception.  
+- There’s also an optional property called **reverseDuration**, which defines how long the reverse animation takes.  
 
+> Note: You can’t set fixed frame-based values for animations because frame rates vary across devices — a device with a lower frame rate will take longer to render each frame, while a device with a higher frame rate will render more smoothly.
+# AnimationController and TickerProvider in Flutter
+
+When creating an `AnimationController` in Flutter, you need to pass a `vsync` parameter.  
+The `vsync` ensures that the animation is synchronized with the device’s screen refresh rate,  
+which improves performance and prevents unnecessary frame rendering.
+
+---
+
+## Why do we need `TickerProvider`?
+
+The `vsync` parameter requires a **TickerProvider**.  
+A `Ticker` is responsible for triggering frames at the right time,  
+and the `TickerProvider` creates and manages this `Ticker` for you.
+
+However, `TickerProvider` is an **abstract class**, which means you cannot create  
+an object of it directly. Instead, you make your class implement it.
+
+---
+
+## How to provide `TickerProvider` in a StatefulWidget?
+
+To make your `State` class a `TickerProvider`, you can use the  
+`SingleTickerProviderStateMixin` or `TickerProviderStateMixin` (if you have more than one animation controller).
+
+## Example Code
+
+```dart
+class MyAnimatedWidgetState extends State<MyAnimatedWidget>
+    with SingleTickerProviderStateMixin {
+
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this, // 'this' refers to the current State, which is now a TickerProvider
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+
+```
 ## Example Code
 ```dart
 import 'package:flutter/material.dart';
