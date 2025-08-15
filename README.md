@@ -311,6 +311,112 @@ class _ScaleAnimationExampleState extends State<ScaleAnimationExample>
   }
 }
 ```
+
+
+To play an animation in Flutter, we use the `AnimationController`.  
+
+- **`forward()`** → Runs the animation from its starting point to its end.  
+- **`reverse()`** → Runs the animation backward, from its end to its start, using the `reverseDuration` you specified.  
+- **`stop()`** → Stops the animation at its current position.  
+- **`reset()`** → Resets the animation back to its starting position.  
+- **`repeat()`** → Loops the animation continuously.  
+    - It has a `reverse` argument — if set to `true`, the animation will loop forward and backward. If `false`, it will only loop forward.
+
+If you want to apply a curve to your animation, instead of passing the `AnimationController` directly,  
+you can wrap it with a `CurvedAnimation`.  
+
+`CurvedAnimation` takes two parameters:  
+- **`parent`** → The `AnimationController`.  
+- **`curve`** → The animation curve you want to apply (e.g., `Curves.easeIn`, `Curves.bounceOut`, etc.).
+- 
+### Example Code
+
+```dart
+class AnimationDemo extends StatefulWidget {
+  const AnimationDemo({super.key});
+
+  @override
+  State<AnimationDemo> createState() => _AnimationDemoState();
+}
+
+class _AnimationDemoState extends State<AnimationDemo>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
+
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Widget _buildBox() {
+    return ScaleTransition(
+      scale: _animation,
+      child: Container(
+        width: 100,
+        height: 100,
+        color: Colors.blue,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Animation Controller Example")),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildBox(),
+          const SizedBox(height: 30),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                onPressed: () => _controller.forward(),
+                child: const Text("Forward"),
+              ),
+              ElevatedButton(
+                onPressed: () => _controller.reverse(),
+                child: const Text("Reverse"),
+              ),
+              ElevatedButton(
+                onPressed: () => _controller.stop(),
+                child: const Text("Stop"),
+              ),
+              ElevatedButton(
+                onPressed: () => _controller.reset(),
+                child: const Text("Reset"),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () => _controller.repeat(reverse: true),
+            child: const Text("Repeat with Reverse"),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
 ⚡ **Tip:**  
 - Use **Implicit Animations** for simple and quick effects.  
 - Use **Explicit Animations** for more complex and customizable animations.
