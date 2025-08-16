@@ -537,6 +537,107 @@ class BallWidget extends StatelessWidget {
   }
 }
 ```
+## Controller `.value` vs Animation `.value`
+
+In Flutter animations there are two places you can read a “value”:
+
+- **`AnimationController.value`**  
+  - A `double` normalized between **0.0 → 1.0** that represents the current progress (time) of the animation.
+  - It’s time-based and **type-agnostic** (always `double`), not the transformed value.
+
+- **`Animation<T>.value`**  
+  - The **current animated value** of type `T` produced by a `Tween<T>` (e.g., `double`, `Color`, `Offset`, etc.).
+  - It is derived from `controller.value` via the tween (and optionally a curve).  
+  - If you wrap the controller in a `CurvedAnimation`, the controller still goes 0→1 linearly, while `animation.value` follows the curve.
+
+### Listening for value changes
+Use `.addListener()` to be notified **every frame** when the value changes:
+- Call it on the **controller** to listen to time/progress updates (0..1).
+- Call it on the **animation** to listen to the transformed value (`T`).
+
+> Remember to call `dispose()` on the controller to avoid memory leaks.
+
+---
+
+### Example 
+
+```dart
+import 'package:flutter/material.dart';
+
+class ValuesListeningExample extends StatefulWidget {
+  const ValuesListeningExample({super.key});
+
+  @override
+  State<ValuesListeningExample> createState() => _ValuesListeningExampleState();
+}
+
+class _ValuesListeningExampleState extends State<ValuesListeningExample>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _size;   // from 50 → 150
+  late Animation<Color?> _color;  // from red → blue
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+      reverseDuration: const Duration(seconds: 1),
+    );
+
+    final curved = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+
+    _size  = Tween<double>(begin: 50,  end: 150).animate(curved);
+    _color = ColorTween(begin: Colors.red, end: Colors.blue).animate(curved);
+
+    // Listen to normalized time/progress (0.0 → 1.0)
+    _controller.addListener(() {
+      // e.g., 0.00, 0.01, ..., 1.00
+      // print('controller.value: ${_controller.value.toStringAsFixed(2)}');
+    });
+
+    // Listen to the actual animated values
+    _size.addListener(() {
+      // e.g., 50.0 → 150.0 following the curve
+      // print('size.value: ${_size.value}');
+    });
+
+    _color.addListener(() {
+      // e.g., interpolated Color between red and blue
+      // print('color.value: ${_color.value}');
+    });
+
+    _controller.repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Container(
+            width: _size.value,
+            height: _size.value,
+            color: _color.value,
+          );
+        },
+      ),
+    );
+  }
+}
+```
 ⚡ **Tip:**  
 - Use **Implicit Animations** for simple and quick effects.  
 - Use **Explicit Animations** for more complex and customizable animations.
