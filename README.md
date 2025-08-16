@@ -417,6 +417,126 @@ class _AnimationDemoState extends State<AnimationDemo>
   }
 }
 ```
+# AnimationStatus Example in Flutter
+
+## Overview
+`AnimationStatus` in Flutter is an enum with four values:
+- **completed**: When the animation is at its end.
+- **dismissed**: When the animation is at its start.
+- **forward**: When the animation is moving from the start towards the end.
+- **reverse**: When the animation is moving from the end towards the start.
+
+You can get the animation's status in two ways:
+1. From the controller directly: `controller.status`
+2. By adding a listener:  
+   ```dart
+   controller.addStatusListener((status) {
+     // React to status changes here
+   });
+    ```
+### Example Code
+
+```dart
+class TwoBallsAnimationExample extends StatefulWidget {
+  const TwoBallsAnimationExample({super.key});
+
+  @override
+  State<TwoBallsAnimationExample> createState() => _TwoBallsAnimationExampleState();
+}
+
+class _TwoBallsAnimationExampleState extends State<TwoBallsAnimationExample>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _ball1Animation;
+  late Animation<double> _ball2Animation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    );
+
+    // Ball 1: moves first
+    _ball1Animation = Tween<double>(begin: 0, end: 200).animate(
+      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.5)),
+    );
+
+    // Ball 2: starts moving after Ball 1 completes
+    _ball2Animation = Tween<double>(begin: 0, end: 200).animate(
+      CurvedAnimation(parent: _controller, curve: const Interval(0.5, 1.0)),
+    );
+
+    // Listen to animation status
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        print("Ball 1 reached the end → Ball 2 starts forward");
+        _controller.reverse();
+      } else if (status == AnimationStatus.dismissed) {
+        print("Animation returned to start");
+        _controller.forward();
+      } else if (status == AnimationStatus.forward) {
+        print("Animation is moving forward");
+      } else if (status == AnimationStatus.reverse) {
+        print("Animation is moving in reverse");
+      }
+    });
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Two Balls Animation Example")),
+      body: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Stack(
+            children: [
+              Positioned(
+                left: 50,
+                top: _ball1Animation.value,
+                child: const BallWidget(color: Colors.blue),
+              ),
+              Positioned(
+                left: 150,
+                top: _ball2Animation.value,
+                child: const BallWidget(color: Colors.red),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class BallWidget extends StatelessWidget {
+  final Color color;
+  const BallWidget({super.key, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+      ),
+    );
+  }
+}
+```
 ⚡ **Tip:**  
 - Use **Implicit Animations** for simple and quick effects.  
 - Use **Explicit Animations** for more complex and customizable animations.
